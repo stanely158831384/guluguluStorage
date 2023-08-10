@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: storage-postgres-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: storage-postgres
+  template:
+    metadata:
+      labels:
+        app: storage-postgres
+    spec:
+      containers:
+        - name: storage-postgres
+          image: postgres
+          env:
+            - name: POSTGRES_PASSWORD
+              value: secret
+            - name: POSTGRES_USER
+              value: root
+            - name: POSTGRES_DB
+              value: gulugulu_storage
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: storage-postgres-srv
+spec:
+  selector:
+    app: storage-postgres
+  ports:
+    - name: db
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
