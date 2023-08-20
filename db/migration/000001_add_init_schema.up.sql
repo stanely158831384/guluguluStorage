@@ -32,8 +32,8 @@ CREATE TABLE "feeling" (
 
 CREATE TABLE "picture" (
   "id" bigserial PRIMARY KEY,
-  "link" varchar,
-  "user_id" bigint,
+  "link" varchar NOT NULL,
+  "user_id" bigint NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 

@@ -51,6 +51,15 @@ func (q *Queries) CreateFeeling(ctx context.Context, arg CreateFeelingParams) (F
 	return i, err
 }
 
+const deleteFeeling = `-- name: DeleteFeeling :exec
+DELETE FROM feeling WHERE id = $1
+`
+
+func (q *Queries) DeleteFeeling(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteFeeling, id)
+	return err
+}
+
 const getFeeling = `-- name: GetFeeling :one
 SELECT id, product_id, user_id, username, comment, recommend, created_at FROM feeling
 WHERE id = $1 LIMIT 1
@@ -58,6 +67,76 @@ WHERE id = $1 LIMIT 1
 
 func (q *Queries) GetFeeling(ctx context.Context, id int64) (Feeling, error) {
 	row := q.db.QueryRow(ctx, getFeeling, id)
+	var i Feeling
+	err := row.Scan(
+		&i.ID,
+		&i.ProductID,
+		&i.UserID,
+		&i.Username,
+		&i.Comment,
+		&i.Recommend,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const listFeelings = `-- name: ListFeelings :many
+SELECT id, product_id, user_id, username, comment, recommend, created_at FROM feeling
+ORDER BY id
+`
+
+func (q *Queries) ListFeelings(ctx context.Context) ([]Feeling, error) {
+	rows, err := q.db.Query(ctx, listFeelings)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Feeling{}
+	for rows.Next() {
+		var i Feeling
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductID,
+			&i.UserID,
+			&i.Username,
+			&i.Comment,
+			&i.Recommend,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateFeeling = `-- name: UpdateFeeling :one
+UPDATE feeling SET product_id = $2, user_id = $3, username = $4, comment = $5, recommend = $6
+WHERE id = $1
+RETURNING id, product_id, user_id, username, comment, recommend, created_at
+`
+
+type UpdateFeelingParams struct {
+	ID        int64  `json:"id"`
+	ProductID int64  `json:"product_id"`
+	UserID    int64  `json:"user_id"`
+	Username  string `json:"username"`
+	Comment   string `json:"comment"`
+	Recommend bool   `json:"recommend"`
+}
+
+func (q *Queries) UpdateFeeling(ctx context.Context, arg UpdateFeelingParams) (Feeling, error) {
+	row := q.db.QueryRow(ctx, updateFeeling,
+		arg.ID,
+		arg.ProductID,
+		arg.UserID,
+		arg.Username,
+		arg.Comment,
+		arg.Recommend,
+	)
 	var i Feeling
 	err := row.Scan(
 		&i.ID,

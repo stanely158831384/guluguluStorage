@@ -33,10 +33,10 @@ type Ingredient struct {
 }
 
 type Picture struct {
-	ID        int64       `json:"id"`
-	Link      pgtype.Text `json:"link"`
-	UserID    pgtype.Int8 `json:"user_id"`
-	CreatedAt time.Time   `json:"created_at"`
+	ID        int64     `json:"id"`
+	Link      string    `json:"link"`
+	UserID    int64     `json:"user_id"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type Product struct {

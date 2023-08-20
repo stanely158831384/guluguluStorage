@@ -14,11 +14,26 @@ type Querier interface {
 	CreateIngredients(ctx context.Context, arg CreateIngredientsParams) (Ingredient, error)
 	CreatePicture(ctx context.Context, arg CreatePictureParams) (Picture, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
+	DeleteCategory(ctx context.Context, id int64) error
+	DeleteFeeling(ctx context.Context, id int64) error
+	DeleteIngredient(ctx context.Context, id int64) error
+	DeletePicture(ctx context.Context, id int64) error
+	DeleteProduct(ctx context.Context, id int64) error
 	GetCategory(ctx context.Context, id int64) (Category, error)
 	GetFeeling(ctx context.Context, id int64) (Feeling, error)
 	GetIngredient(ctx context.Context, id int64) (Ingredient, error)
 	GetPicture(ctx context.Context, id int64) (Picture, error)
 	GetProduct(ctx context.Context, id int64) (Product, error)
+	ListCategories(ctx context.Context) ([]Category, error)
+	ListFeelings(ctx context.Context) ([]Feeling, error)
+	ListIngredients(ctx context.Context) ([]Ingredient, error)
+	ListPictures(ctx context.Context) ([]Picture, error)
+	ListProducts(ctx context.Context) ([]Product, error)
+	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
+	UpdateFeeling(ctx context.Context, arg UpdateFeelingParams) (Feeling, error)
+	UpdateIngredient(ctx context.Context, arg UpdateIngredientParams) (Ingredient, error)
+	UpdatePicture(ctx context.Context, arg UpdatePictureParams) (Picture, error)
+	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 }
 
 var _ Querier = (*Queries)(nil)

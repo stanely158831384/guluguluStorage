@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createPicture = `-- name: CreatePicture :one
@@ -22,8 +20,8 @@ RETURNING id, link, user_id, created_at
 `
 
 type CreatePictureParams struct {
-	Link   pgtype.Text `json:"link"`
-	UserID pgtype.Int8 `json:"user_id"`
+	Link   string `json:"link"`
+	UserID int64  `json:"user_id"`
 }
 
 func (q *Queries) CreatePicture(ctx context.Context, arg CreatePictureParams) (Picture, error) {
@@ -38,6 +36,15 @@ func (q *Queries) CreatePicture(ctx context.Context, arg CreatePictureParams) (P
 	return i, err
 }
 
+const deletePicture = `-- name: DeletePicture :exec
+DELETE FROM picture WHERE id = $1
+`
+
+func (q *Queries) DeletePicture(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deletePicture, id)
+	return err
+}
+
 const getPicture = `-- name: GetPicture :one
 SELECT id, link, user_id, created_at FROM picture
 WHERE id = $1 LIMIT 1
@@ -45,6 +52,60 @@ WHERE id = $1 LIMIT 1
 
 func (q *Queries) GetPicture(ctx context.Context, id int64) (Picture, error) {
 	row := q.db.QueryRow(ctx, getPicture, id)
+	var i Picture
+	err := row.Scan(
+		&i.ID,
+		&i.Link,
+		&i.UserID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const listPictures = `-- name: ListPictures :many
+SELECT id, link, user_id, created_at FROM picture
+ORDER BY id
+`
+
+func (q *Queries) ListPictures(ctx context.Context) ([]Picture, error) {
+	rows, err := q.db.Query(ctx, listPictures)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Picture{}
+	for rows.Next() {
+		var i Picture
+		if err := rows.Scan(
+			&i.ID,
+			&i.Link,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updatePicture = `-- name: UpdatePicture :one
+UPDATE picture SET link = $2, user_id = $3
+WHERE id = $1
+RETURNING id, link, user_id, created_at
+`
+
+type UpdatePictureParams struct {
+	ID     int64  `json:"id"`
+	Link   string `json:"link"`
+	UserID int64  `json:"user_id"`
+}
+
+func (q *Queries) UpdatePicture(ctx context.Context, arg UpdatePictureParams) (Picture, error) {
+	row := q.db.QueryRow(ctx, updatePicture, arg.ID, arg.Link, arg.UserID)
 	var i Picture
 	err := row.Scan(
 		&i.ID,

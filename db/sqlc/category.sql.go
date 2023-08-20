@@ -25,6 +25,15 @@ func (q *Queries) CreateCategory(ctx context.Context, name string) (Category, er
 	return i, err
 }
 
+const deleteCategory = `-- name: DeleteCategory :exec
+DELETE FROM category WHERE id = $1
+`
+
+func (q *Queries) DeleteCategory(ctx context.Context, id int64) error {
+	_, err := q.db.Exec(ctx, deleteCategory, id)
+	return err
+}
+
 const getCategory = `-- name: GetCategory :one
 SELECT id, name FROM category
 WHERE id = $1 LIMIT 1
@@ -32,6 +41,49 @@ WHERE id = $1 LIMIT 1
 
 func (q *Queries) GetCategory(ctx context.Context, id int64) (Category, error) {
 	row := q.db.QueryRow(ctx, getCategory, id)
+	var i Category
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
+const listCategories = `-- name: ListCategories :many
+SELECT id, name FROM category
+ORDER BY name
+`
+
+func (q *Queries) ListCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.Query(ctx, listCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Category{}
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateCategory = `-- name: UpdateCategory :one
+UPDATE category SET name = $2
+WHERE id = $1
+RETURNING id, name
+`
+
+type UpdateCategoryParams struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error) {
+	row := q.db.QueryRow(ctx, updateCategory, arg.ID, arg.Name)
 	var i Category
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
