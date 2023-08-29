@@ -13,7 +13,7 @@ func TestCreateIngredientsTx(t *testing.T) {
 	// arg := []string{"a", "b", "c", "d", "e", "f"};
 	// pgtype.Int8{Int64: 1, Valid: true}}
 	arg := CreateIngredientsTxParams{
-		CreateIngredientsParams: CreateIngredientsParams{
+		CreateIngredientParams: CreateIngredientParams{
 			Ingredient: []string{"a", "b", "c", "d", "e", "f"},
 			PictureID: pgtype.Int8{Int64: 1, Valid: true}},
 		AfterCreate: func(Ingredient Ingredient) error {
@@ -24,7 +24,7 @@ func TestCreateIngredientsTx(t *testing.T) {
 
 	result, err := testStore.CreateIngredientsTx(context.Background(), arg)
 
-	require.Equal(t, arg.Ingredient, result.Ingredient.Ingredient)
+	require.Equal(t, arg.CreateIngredientParams.Ingredient, result.Ingredient.Ingredient)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, result)

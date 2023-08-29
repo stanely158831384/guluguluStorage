@@ -6,6 +6,7 @@ CREATE TABLE "category" (
 CREATE TABLE "product" (
   "id" bigserial PRIMARY KEY,
   "name" varchar NOT NULL,
+  "username" varchar NOT NULL,
   "category_id" bigint NOT NULL,
   "ingredients_id" bigint NOT NULL,
   "risk_level" smallserial,
@@ -33,7 +34,7 @@ CREATE TABLE "feeling" (
 CREATE TABLE "picture" (
   "id" bigserial PRIMARY KEY,
   "link" varchar NOT NULL,
-  "user_id" bigint NOT NULL,
+  "username" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 

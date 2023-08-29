@@ -3,7 +3,7 @@ package db
 import "context"
 
 type CreateIngredientsTxParams struct {
-	CreateIngredientsParams
+	CreateIngredientParams
 	AfterCreate func(Ingredient Ingredient) error
 }
 
@@ -17,7 +17,7 @@ func (store *SQLStore) CreateIngredientsTx(ctx context.Context, arg CreateIngred
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 
-		result.Ingredient, err = q.CreateIngredients(ctx, arg.CreateIngredientsParams)
+		result.Ingredient, err = q.CreateIngredient(ctx, arg.CreateIngredientParams)
 
 		if err != nil {
 			return err

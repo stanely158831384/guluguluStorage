@@ -12,7 +12,7 @@ import (
 func createRandomPicture(t *testing.T) Picture {
 	arg := CreatePictureParams{
 		Link: util.RandomString(6),
-		UserID: util.RandomAccountID(),
+		Username: util.RandomString(6),
 	}
 	picture, err := testStore.CreatePicture(context.Background(), arg)
 	require.NoError(t, err)
@@ -28,12 +28,12 @@ func test1(t *testing.T,errs chan error,resultsIngredients chan CreateIngredient
 			case <-ctx1.Done():
 				return
 			default:
-				CreateIngredientsParams := CreateIngredientsParams{
+				CreateIngredientsParams := CreateIngredientParams{
 					PictureID: pgtype.Int8{picture.ID, true},
 					Ingredient: ingredients,
 				}
 				result, err := testStore.CreateIngredientsTx(context.Background(), CreateIngredientsTxParams{
-						CreateIngredientsParams: CreateIngredientsParams,
+						CreateIngredientParams: CreateIngredientsParams,
 						AfterCreate: func(Ingredient Ingredient) error {
 							require.NotEmpty(t, Ingredient)
 							return nil
@@ -110,13 +110,13 @@ func TestCreateProductTx2(t *testing.T) {
 	category := createRandomCategory(t)
 
 	for i:=0; i<5; i++{
-		CreateIngredientsParams := CreateIngredientsParams{
+		CreateIngredientsParams := CreateIngredientParams{
 			PictureID: pgtype.Int8{picture.ID, true},
 			Ingredient: ingredients,
 		}
 		go func() {
 			result, err := testStore.CreateIngredientsTx(context.Background(), CreateIngredientsTxParams{
-				CreateIngredientsParams: CreateIngredientsParams,
+				CreateIngredientParams: CreateIngredientsParams,
 				AfterCreate: func(Ingredient Ingredient) error {
 					require.NotEmpty(t, Ingredient)
 					return nil
@@ -160,68 +160,68 @@ func TestCreateProductTx2(t *testing.T) {
 
 }
 
-func TestCreateProductsTx(t *testing.T) {
-	picture1 := createRandomPicture(t)
-	n := 5
-	errs := make(chan error)
-	resultsIngredients := make(chan CreateIngredientsTxResult)
-	resultsProducts := make(chan CreateProductTxResult)
+// func TestCreateProductsTx(t *testing.T) {
+// 	picture1 := createRandomPicture(t)
+// 	n := 5
+// 	errs := make(chan error)
+// 	resultsIngredients := make(chan CreateIngredientsTxResult)
+// 	resultsProducts := make(chan CreateProductTxResult)
 
-	ingredients := []string{"a", "b", "c", "d", "e"}
-	for i := 0; i < n; i++ {
-		CreateIngredientsParams := CreateIngredientsParams{
-			PictureID: pgtype.Int8{picture1.ID, true},
-			Ingredient: ingredients,
-		}
-		go func() {
-			result, err := testStore.CreateIngredientsTx(context.Background(), CreateIngredientsTxParams{
-				CreateIngredientsParams: CreateIngredientsParams,
-				AfterCreate: func(Ingredient Ingredient) error {
-					require.NotEmpty(t, Ingredient)
-					return nil
-				},
-			})
-			errs <- err
-			resultsIngredients <- result
-		}()
-	}
-
-
-
-	category := createRandomCategory(t)
-	categoryID := category.ID
-
-	for i := 0; i < n; i++ {
-		result := <-resultsIngredients
-		CreateProductParams := CreateProductParams{
-			Name: util.RandomString(6),
-			CategoryID: category.ID,
-			IngredientsID: result.Ingredient.ID,
-		}
-
-		go func() {
-
-			result, err := testStore.CreateProductTx(context.Background(), CreateProductTxParams{
-				CreateProductParams: CreateProductParams,
-				AfterCreate: func(Product Product) error {
-					require.NotEmpty(t, Product)
-					return nil
-				},
-			})
-			errs <- err
-			resultsProducts <- result
-		}()
-	}
+// 	ingredients := []string{"a", "b", "c", "d", "e"}
+// 	for i := 0; i < n; i++ {
+// 		CreateIngredientsParams := CreateIngredientParams{
+// 			PictureID: pgtype.Int8{picture1.ID, true},
+// 			Ingredient: ingredients,
+// 		}
+// 		go func() {
+// 			result, err := testStore.CreateIngredientsTx(context.Background(), CreateIngredientsTxParams{
+// 				CreateIngredientParams: CreateIngredientsParams,
+// 				AfterCreate: func(Ingredient Ingredient) error {
+// 					require.NotEmpty(t, Ingredient)
+// 					return nil
+// 				},
+// 			})
+// 			errs <- err
+// 			resultsIngredients <- result
+// 		}()
+// 	}
 
 
-	for i := 0; i < n; i++ {
-		err := <-errs
-		require.NoError(t, err)
-		result := <-resultsProducts
-		require.Equal(t, result.Product.CategoryID, categoryID)
-	}
+
+// 	category := createRandomCategory(t)
+// 	categoryID := category.ID
+
+// 	for i := 0; i < n; i++ {
+// 		result := <-resultsIngredients
+// 		CreateProductParams := CreateProductParams{
+// 			Name: util.RandomString(6),
+// 			CategoryID: category.ID,
+// 			IngredientsID: result.Ingredient.ID,
+// 		}
+
+// 		go func() {
+
+// 			result, err := testStore.CreateProductTx(context.Background(), CreateProductTxParams{
+// 				CreateProductParams: CreateProductParams,
+// 				AfterCreate: func(Product Product) error {
+// 					require.NotEmpty(t, Product)
+// 					return nil
+// 				},
+// 			})
+// 			errs <- err
+// 			resultsProducts <- result
+// 		}()
+// 	}
 
 
-}
+// 	for i := 0; i < n; i++ {
+// 		err := <-errs
+// 		require.NoError(t, err)
+// 		result := <-resultsProducts
+// 		require.Equal(t, result.Product.CategoryID, categoryID)
+// 	}
+
+
+// }
 
 

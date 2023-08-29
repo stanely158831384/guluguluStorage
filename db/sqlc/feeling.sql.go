@@ -83,10 +83,101 @@ func (q *Queries) GetFeeling(ctx context.Context, id int64) (Feeling, error) {
 const listFeelings = `-- name: ListFeelings :many
 SELECT id, product_id, user_id, username, comment, recommend, created_at FROM feeling
 ORDER BY id
+LIMIT $1
+OFFSET $2
 `
 
-func (q *Queries) ListFeelings(ctx context.Context) ([]Feeling, error) {
-	rows, err := q.db.Query(ctx, listFeelings)
+type ListFeelingsParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListFeelings(ctx context.Context, arg ListFeelingsParams) ([]Feeling, error) {
+	rows, err := q.db.Query(ctx, listFeelings, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Feeling{}
+	for rows.Next() {
+		var i Feeling
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductID,
+			&i.UserID,
+			&i.Username,
+			&i.Comment,
+			&i.Recommend,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFeelingsByProductId = `-- name: ListFeelingsByProductId :many
+SELECT id, product_id, user_id, username, comment, recommend, created_at FROM feeling
+WHERE product_id = $1
+ORDER BY id
+LIMIT $2
+OFFSET $3
+`
+
+type ListFeelingsByProductIdParams struct {
+	ProductID int64 `json:"product_id"`
+	Limit     int32 `json:"limit"`
+	Offset    int32 `json:"offset"`
+}
+
+func (q *Queries) ListFeelingsByProductId(ctx context.Context, arg ListFeelingsByProductIdParams) ([]Feeling, error) {
+	rows, err := q.db.Query(ctx, listFeelingsByProductId, arg.ProductID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Feeling{}
+	for rows.Next() {
+		var i Feeling
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductID,
+			&i.UserID,
+			&i.Username,
+			&i.Comment,
+			&i.Recommend,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFeelingsByUserId = `-- name: ListFeelingsByUserId :many
+SELECT id, product_id, user_id, username, comment, recommend, created_at FROM feeling
+WHERE user_id = $1
+ORDER BY id
+LIMIT $2
+OFFSET $3
+`
+
+type ListFeelingsByUserIdParams struct {
+	UserID int64 `json:"user_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListFeelingsByUserId(ctx context.Context, arg ListFeelingsByUserIdParams) ([]Feeling, error) {
+	rows, err := q.db.Query(ctx, listFeelingsByUserId, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

@@ -12,25 +12,25 @@ import (
 const createPicture = `-- name: CreatePicture :one
 INSERT INTO picture (
     link,
-    user_id
+    username
 ) VALUES (
     $1, $2
 ) 
-RETURNING id, link, user_id, created_at
+RETURNING id, link, username, created_at
 `
 
 type CreatePictureParams struct {
-	Link   string `json:"link"`
-	UserID int64  `json:"user_id"`
+	Link     string `json:"link"`
+	Username string `json:"username"`
 }
 
 func (q *Queries) CreatePicture(ctx context.Context, arg CreatePictureParams) (Picture, error) {
-	row := q.db.QueryRow(ctx, createPicture, arg.Link, arg.UserID)
+	row := q.db.QueryRow(ctx, createPicture, arg.Link, arg.Username)
 	var i Picture
 	err := row.Scan(
 		&i.ID,
 		&i.Link,
-		&i.UserID,
+		&i.Username,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -46,7 +46,7 @@ func (q *Queries) DeletePicture(ctx context.Context, id int64) error {
 }
 
 const getPicture = `-- name: GetPicture :one
-SELECT id, link, user_id, created_at FROM picture
+SELECT id, link, username, created_at FROM picture
 WHERE id = $1 LIMIT 1
 `
 
@@ -56,19 +56,26 @@ func (q *Queries) GetPicture(ctx context.Context, id int64) (Picture, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Link,
-		&i.UserID,
+		&i.Username,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listPictures = `-- name: ListPictures :many
-SELECT id, link, user_id, created_at FROM picture
+SELECT id, link, username, created_at FROM picture
 ORDER BY id
+LIMIT $1
+OFFSET $2
 `
 
-func (q *Queries) ListPictures(ctx context.Context) ([]Picture, error) {
-	rows, err := q.db.Query(ctx, listPictures)
+type ListPicturesParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListPictures(ctx context.Context, arg ListPicturesParams) ([]Picture, error) {
+	rows, err := q.db.Query(ctx, listPictures, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +86,46 @@ func (q *Queries) ListPictures(ctx context.Context) ([]Picture, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Link,
-			&i.UserID,
+			&i.Username,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPicturesByUsername = `-- name: ListPicturesByUsername :many
+SELECT id, link, username, created_at FROM picture
+WHERE username = $1
+ORDER BY id
+LIMIT $2
+OFFSET $3
+`
+
+type ListPicturesByUsernameParams struct {
+	Username string `json:"username"`
+	Limit    int32  `json:"limit"`
+	Offset   int32  `json:"offset"`
+}
+
+func (q *Queries) ListPicturesByUsername(ctx context.Context, arg ListPicturesByUsernameParams) ([]Picture, error) {
+	rows, err := q.db.Query(ctx, listPicturesByUsername, arg.Username, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Picture{}
+	for rows.Next() {
+		var i Picture
+		if err := rows.Scan(
+			&i.ID,
+			&i.Link,
+			&i.Username,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -93,24 +139,24 @@ func (q *Queries) ListPictures(ctx context.Context) ([]Picture, error) {
 }
 
 const updatePicture = `-- name: UpdatePicture :one
-UPDATE picture SET link = $2, user_id = $3
+UPDATE picture SET link = $2, username = $3
 WHERE id = $1
-RETURNING id, link, user_id, created_at
+RETURNING id, link, username, created_at
 `
 
 type UpdatePictureParams struct {
-	ID     int64  `json:"id"`
-	Link   string `json:"link"`
-	UserID int64  `json:"user_id"`
+	ID       int64  `json:"id"`
+	Link     string `json:"link"`
+	Username string `json:"username"`
 }
 
 func (q *Queries) UpdatePicture(ctx context.Context, arg UpdatePictureParams) (Picture, error) {
-	row := q.db.QueryRow(ctx, updatePicture, arg.ID, arg.Link, arg.UserID)
+	row := q.db.QueryRow(ctx, updatePicture, arg.ID, arg.Link, arg.Username)
 	var i Picture
 	err := row.Scan(
 		&i.ID,
 		&i.Link,
-		&i.UserID,
+		&i.Username,
 		&i.CreatedAt,
 	)
 	return i, err

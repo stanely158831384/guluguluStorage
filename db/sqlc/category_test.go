@@ -31,12 +31,19 @@ func TestGetCategory(t *testing.T) {
 	require.Equal(t, category1.Name, category2.Name)
 }
 
+
 func TestListCategories(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		_, err := testStore.CreateCategory(context.Background(), "test")
 		require.NoError(t, err)
 	}
-	categories, err := testStore.ListCategories(context.Background())
+
+	arg := ListCategoriesParams{
+		Limit:  5,
+		Offset: 0,
+	}
+
+	categories, err := testStore.ListCategories(context.Background(),arg)
 	require.NoError(t, err)
 
 

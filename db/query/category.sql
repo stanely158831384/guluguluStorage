@@ -12,7 +12,9 @@ WHERE id = $1 LIMIT 1;
 
 -- name: ListCategories :many
 SELECT * FROM category
-ORDER BY name;
+ORDER BY name
+LIMIT $1
+OFFSET $2;
 
 -- name: UpdateCategory :one
 UPDATE category SET name = $2

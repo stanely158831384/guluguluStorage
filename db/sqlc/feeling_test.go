@@ -65,7 +65,13 @@ func TestListFeelings(t *testing.T) {
 		})
 		require.NoError(t, err)
 	}
-	feelings, err := testStore.ListFeelings(context.Background())
+
+	arg := ListFeelingsParams{
+		Limit:  5,
+		Offset: 0,
+	}
+
+	feelings, err := testStore.ListFeelings(context.Background(),arg)
 	require.NoError(t, err)
 
 	for _, feeling := range feelings {

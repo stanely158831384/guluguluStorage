@@ -10,18 +10,35 @@ import (
 )
 
 func createRandomProduct(t *testing.T) (Product, error) {
-	category, err := testStore.CreateCategory(context.Background(), "test")
-	Ingredient, err := testStore.CreateIngredients(context.Background(), CreateIngredientsParams{
+	Picture, err0:= testStore.CreatePicture(context.Background(), CreatePictureParams{
+		Link: util.RandomString(6),
+		Username: util.RandomString(6),
+	})
+	require.NoError(t, err0)
+
+
+	category, err1 := testStore.CreateCategory(context.Background(), "test")
+	require.NoError(t, err1)
+
+	Ingredient, err2 := testStore.CreateIngredient(context.Background(), CreateIngredientParams{
 		Ingredient: []string{"a", "b", "c", "d", "e", "f"},
-		PictureID: pgtype.Int8{Int64: 1, Valid: true}},
+		PictureID: pgtype.Int8{Int64: Picture.ID, Valid: true}},
 	)
-	require.NoError(t, err)
-	require.NotEmpty(t, Ingredient)
+	require.NoError(t, err2)
+
+	User, err3 := testStore.CreateUser(context.Background(), CreateUserParams{
+		Username: util.RandomString(6),
+		HashedPassword: util.RandomString(6),
+		Email: util.RandomEmail(),
+		FullName: util.RandomString(6),
+	})
+	require.NoError(t, err3)
 
 	arg := CreateProductParams{
 		Name: util.RandomString(6),
 		CategoryID: category.ID,
 		IngredientsID: Ingredient.ID,
+		Username: User.Username,
 	}
 	product, err := testStore.CreateProduct(context.Background(), arg)
 	require.NoError(t, err)
@@ -36,16 +53,37 @@ func createRandomProduct(t *testing.T) (Product, error) {
 }
 
 
+
 func TestCreateProduct(t *testing.T) {
-	category, err := testStore.CreateCategory(context.Background(), "test")
-	Ingredient, err := testStore.CreateIngredients(context.Background(), CreateIngredientsParams{
+	Picture, err0:= testStore.CreatePicture(context.Background(), CreatePictureParams{
+		Link: util.RandomString(6),
+		Username: util.RandomString(6),
+	})
+	require.NoError(t, err0)
+
+
+	category, err1 := testStore.CreateCategory(context.Background(), "test")
+	require.NoError(t, err1)
+
+	Ingredient, err2 := testStore.CreateIngredient(context.Background(), CreateIngredientParams{
 		Ingredient: []string{"a", "b", "c", "d", "e", "f"},
-		PictureID: pgtype.Int8{Int64: 1, Valid: true}},
+		PictureID: pgtype.Int8{Int64: Picture.ID, Valid: true}},
 	)
+	require.NoError(t, err2)
+
+	User, err3 := testStore.CreateUser(context.Background(), CreateUserParams{
+		Username: util.RandomString(6),
+		HashedPassword: util.RandomString(6),
+		Email: util.RandomEmail(),
+		FullName: util.RandomString(6),
+	})
+	require.NoError(t, err3)
+
 	arg := CreateProductParams{
 		Name: util.RandomString(6),
 		CategoryID: category.ID,
 		IngredientsID: Ingredient.ID,
+		Username: User.Username,
 	}
 	product, err := testStore.CreateProduct(context.Background(), arg)
 	require.NoError(t, err)
@@ -77,7 +115,7 @@ func TestUpdateProduct(t *testing.T) {
 	require.NotEmpty(t, product1)
 
 	category, err := testStore.CreateCategory(context.Background(), "category")
-	ingredient, err := testStore.CreateIngredients(context.Background(), CreateIngredientsParams{
+	ingredient, err := testStore.CreateIngredient(context.Background(), CreateIngredientParams{
 		Ingredient: []string{"a", "b", "c", "d", "e", "f"},
 		PictureID: pgtype.Int8{Int64: 2, Valid: true}},
 	)

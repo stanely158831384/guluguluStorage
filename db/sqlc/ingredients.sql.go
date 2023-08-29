@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createIngredients = `-- name: CreateIngredients :one
+const createIngredient = `-- name: CreateIngredient :one
 INSERT INTO ingredients (
     ingredient,
     picture_id
@@ -21,13 +21,13 @@ INSERT INTO ingredients (
 RETURNING id, ingredient, picture_id, created_at
 `
 
-type CreateIngredientsParams struct {
+type CreateIngredientParams struct {
 	Ingredient []string    `json:"ingredient"`
 	PictureID  pgtype.Int8 `json:"picture_id"`
 }
 
-func (q *Queries) CreateIngredients(ctx context.Context, arg CreateIngredientsParams) (Ingredient, error) {
-	row := q.db.QueryRow(ctx, createIngredients, arg.Ingredient, arg.PictureID)
+func (q *Queries) CreateIngredient(ctx context.Context, arg CreateIngredientParams) (Ingredient, error) {
+	row := q.db.QueryRow(ctx, createIngredient, arg.Ingredient, arg.PictureID)
 	var i Ingredient
 	err := row.Scan(
 		&i.ID,
@@ -67,10 +67,17 @@ func (q *Queries) GetIngredient(ctx context.Context, id int64) (Ingredient, erro
 const listIngredients = `-- name: ListIngredients :many
 SELECT id, ingredient, picture_id, created_at FROM ingredients
 ORDER BY id
+LIMIT $1
+OFFSET $2
 `
 
-func (q *Queries) ListIngredients(ctx context.Context) ([]Ingredient, error) {
-	rows, err := q.db.Query(ctx, listIngredients)
+type ListIngredientsParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListIngredients(ctx context.Context, arg ListIngredientsParams) ([]Ingredient, error) {
+	rows, err := q.db.Query(ctx, listIngredients, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

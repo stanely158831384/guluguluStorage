@@ -35,16 +35,26 @@ type Ingredient struct {
 type Picture struct {
 	ID        int64     `json:"id"`
 	Link      string    `json:"link"`
-	UserID    int64     `json:"user_id"`
+	Username  string    `json:"username"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 type Product struct {
 	ID            int64       `json:"id"`
 	Name          string      `json:"name"`
+	Username      string      `json:"username"`
 	CategoryID    int64       `json:"category_id"`
 	IngredientsID int64       `json:"ingredients_id"`
 	RiskLevel     pgtype.Int2 `json:"risk_level"`
 	PictureID     pgtype.Int8 `json:"picture_id"`
 	CreatedAt     time.Time   `json:"created_at"`
+}
+
+type User struct {
+	Username          string    `json:"username"`
+	HashedPassword    string    `json:"hashed_password"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
 }

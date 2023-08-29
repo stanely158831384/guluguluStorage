@@ -55,8 +55,8 @@ evans:
 	evans --host localhost --port 9090 -r repl
 
 mock:
-	mockgen -package mockdb -destination db/mock/store.go github.com/techschool/simplebank/db/sqlc Store
-	mockgen -package mockwk -destination worker/mock/distributor.go github.com/techschool/simplebank/worker TaskDistributor
+	mockgen -package mockdb -destination db/mock/store.go github.com/stanely158831384/guluguluStorage/db/sqlc Store
+	mockgen -package mockwk -destination worker/mock/distributor.go github.com/stanely158831384/guluguluStorage/worker TaskDistributor
 
 redis:
 	docker run --name redis -p 6379:6379 -d redis:7-alpine

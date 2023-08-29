@@ -1,4 +1,4 @@
--- name: CreateIngredients :one
+-- name: CreateIngredient :one
 INSERT INTO ingredients (
     ingredient,
     picture_id
@@ -13,7 +13,9 @@ WHERE id = $1 LIMIT 1;
 
 -- name: ListIngredients :many
 SELECT * FROM ingredients
-ORDER BY id;
+ORDER BY id
+LIMIT $1
+OFFSET $2;
 
 -- name: UpdateIngredient :one
 UPDATE ingredients SET ingredient = $2, picture_id = $3

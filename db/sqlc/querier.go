@@ -11,9 +11,10 @@ import (
 type Querier interface {
 	CreateCategory(ctx context.Context, name string) (Category, error)
 	CreateFeeling(ctx context.Context, arg CreateFeelingParams) (Feeling, error)
-	CreateIngredients(ctx context.Context, arg CreateIngredientsParams) (Ingredient, error)
+	CreateIngredient(ctx context.Context, arg CreateIngredientParams) (Ingredient, error)
 	CreatePicture(ctx context.Context, arg CreatePictureParams) (Picture, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteCategory(ctx context.Context, id int64) error
 	DeleteFeeling(ctx context.Context, id int64) error
 	DeleteIngredient(ctx context.Context, id int64) error
@@ -24,16 +25,23 @@ type Querier interface {
 	GetIngredient(ctx context.Context, id int64) (Ingredient, error)
 	GetPicture(ctx context.Context, id int64) (Picture, error)
 	GetProduct(ctx context.Context, id int64) (Product, error)
-	ListCategories(ctx context.Context) ([]Category, error)
-	ListFeelings(ctx context.Context) ([]Feeling, error)
-	ListIngredients(ctx context.Context) ([]Ingredient, error)
-	ListPictures(ctx context.Context) ([]Picture, error)
-	ListProducts(ctx context.Context) ([]Product, error)
+	GetUser(ctx context.Context, username string) (User, error)
+	ListCategories(ctx context.Context, arg ListCategoriesParams) ([]Category, error)
+	ListFeelings(ctx context.Context, arg ListFeelingsParams) ([]Feeling, error)
+	ListFeelingsByProductId(ctx context.Context, arg ListFeelingsByProductIdParams) ([]Feeling, error)
+	ListFeelingsByUserId(ctx context.Context, arg ListFeelingsByUserIdParams) ([]Feeling, error)
+	ListIngredients(ctx context.Context, arg ListIngredientsParams) ([]Ingredient, error)
+	ListPictures(ctx context.Context, arg ListPicturesParams) ([]Picture, error)
+	ListPicturesByUsername(ctx context.Context, arg ListPicturesByUsernameParams) ([]Picture, error)
+	ListProducts(ctx context.Context, arg ListProductsParams) ([]Product, error)
+	ListProductsByCategory(ctx context.Context, arg ListProductsByCategoryParams) ([]Product, error)
+	ListProductsByUserID(ctx context.Context, arg ListProductsByUserIDParams) ([]Product, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateFeeling(ctx context.Context, arg UpdateFeelingParams) (Feeling, error)
 	UpdateIngredient(ctx context.Context, arg UpdateIngredientParams) (Ingredient, error)
 	UpdatePicture(ctx context.Context, arg UpdatePictureParams) (Picture, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
+	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -11,14 +11,14 @@ import (
 func TestCreatePicture (t *testing.T) {
 	arg := CreatePictureParams{
 		Link: util.RandomString(6),
-		UserID: util.RandomAccountID(),
+		Username: util.RandomString(6),
 	}
 	picture, err := testStore.CreatePicture(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, picture)
 
 	require.Equal(t, arg.Link, picture.Link)
-	require.Equal(t, arg.UserID, picture.UserID)
+	require.Equal(t, arg.Username, picture.Username)
 	require.NotZero(t, picture.ID)
 	require.NotZero(t, picture.CreatedAt)
 }
@@ -26,7 +26,7 @@ func TestCreatePicture (t *testing.T) {
 func TestGetPicture(t *testing.T) {
 	arg := CreatePictureParams{
 		Link: util.RandomString(6),
-		UserID: util.RandomAccountID(),
+		Username: util.RandomString(6),
 	}
 	picture1, err := testStore.CreatePicture(context.Background(), arg)
 	require.NoError(t, err)
@@ -43,7 +43,7 @@ func TestGetPicture(t *testing.T) {
 func TestDeletePicture(t *testing.T) {
 	picture1, err := testStore.CreatePicture(context.Background(), CreatePictureParams{
 		Link: util.RandomString(6),
-		UserID: util.RandomAccountID(),
+		Username: util.RandomString(6),
 	})
 	require.NoError(t, err)
 	require.NotEmpty(t, picture1)

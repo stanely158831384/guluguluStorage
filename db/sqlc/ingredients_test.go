@@ -10,7 +10,7 @@ import (
 
 func TestCreateIngredients(t *testing.T) {
 	arg := []string{"a", "b", "c", "d", "e", "f"};
-	ingredient, err := testStore.CreateIngredients(context.Background(), CreateIngredientsParams{
+	ingredient, err := testStore.CreateIngredient(context.Background(), CreateIngredientParams{
 		Ingredient: arg,
 		PictureID: pgtype.Int8{Int64: 1, Valid: true}},
 	)
@@ -25,7 +25,7 @@ func TestCreateIngredients(t *testing.T) {
 
 func TestGetIngredients(t *testing.T) {
 	arg := []string{"a", "b", "c", "d", "e", "f"};
-	ingredient1, err := testStore.CreateIngredients(context.Background(), CreateIngredientsParams{
+	ingredient1, err := testStore.CreateIngredient(context.Background(), CreateIngredientParams{
 		Ingredient: arg,
 		PictureID: pgtype.Int8{Int64: 1, Valid: true}},
 	)
@@ -42,7 +42,7 @@ func TestGetIngredients(t *testing.T) {
 
 func TestDeleteIngredients(t *testing.T) {
 	arg := []string{"a", "b", "c", "d", "e", "f"};
-	ingredient1, err := testStore.CreateIngredients(context.Background(), CreateIngredientsParams{
+	ingredient1, err := testStore.CreateIngredient(context.Background(), CreateIngredientParams{
 		Ingredient: arg,
 		PictureID: pgtype.Int8{Int64: 1, Valid: true}},
 	)
@@ -59,7 +59,7 @@ func TestDeleteIngredients(t *testing.T) {
 
 func TestUpdateIngredient(t *testing.T) {
 	arg := []string{"a", "b", "c", "d", "e", "f"};
-	ingredient1, err := testStore.CreateIngredients(context.Background(), CreateIngredientsParams{
+	ingredient1, err := testStore.CreateIngredient(context.Background(), CreateIngredientParams{
 		Ingredient: arg,
 		PictureID: pgtype.Int8{Int64: 1, Valid: true}},
 	)
