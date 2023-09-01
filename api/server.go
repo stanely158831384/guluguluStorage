@@ -49,12 +49,11 @@ func NewServer2(store db.Store) (*Server, error) {
 		store: store,
 	}
 
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok{
-		v.RegisterValidation("currency",validCurrency)
-		v.RegisterValidation("category",validCategory)
-	}
+	router := gin.Default()
+	router.GET("/getCategory/noAuth/:id", server.getCategory)
+	router.GET("/listCategories/noAuth", server.listCategoriesNoAuth)
 
-	server.setupRouter()
+	server.router = router
 
 	return server, nil
 }
@@ -63,16 +62,16 @@ func (server *Server) setupRouter(){
 	router := gin.Default()
 	router.GET("/listCategories/noAuth", server.listCategoriesNoAuth)
 	router.GET("/getCategory/noAuth/:id", server.getCategory)
-	router.GET("listFeelingsByProductId/noAuth", server.ListFeelingsByProductIdNoAuth)
-	router.GET("listFeelingsByUserId/noAuth", server.ListFeelingsByUserIdNoAuth)
-	router.GET("getFeeling/noAuth/:id", server.getFeeling)
-	router.GET("listIngredients/noAuth", server.listIngredients)
-	router.GET("GetIngredient/noAuth/:id", server.GetIngredient)
-	router.GET("GetPicture/noAuth/:id", server.GetPicture)
-	router.GET("ListProductByUsername/noAuth/:username",server.ListProductByUsername)
-	router.GET("ListProductsByCategory/noAuth/:category_id",server.ListProductsByCategoryId)
-	router.GET("listProducts/noAuth",server.listProducts)
-	router.GET("getProduct/noAuth/:id",server.getProduct)
+	router.GET("/listFeelingsByProductId/noAuth", server.ListFeelingsByProductIdNoAuth)
+	router.GET("/listFeelingsByUserId/noAuth", server.ListFeelingsByUserIdNoAuth)
+	router.GET("/getFeeling/noAuth/:id", server.getFeeling)
+	router.GET("/listIngredients/noAuth", server.listIngredients)
+	router.GET("/GetIngredient/noAuth/:id", server.GetIngredient)
+	router.GET("/GetPicture/noAuth/:id", server.GetPicture)
+	router.GET("/ListProductByUsername/noAuth/:username",server.ListProductByUsername)
+	router.GET("/ListProductsByCategory/noAuth/:category_id",server.ListProductsByCategoryId)
+	router.GET("/listProducts/noAuth",server.listProducts)
+	router.GET("/getProduct/noAuth/:id",server.getProduct)
 
 	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	authRoutes.POST("/categories", server.createCategory)

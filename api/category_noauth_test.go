@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -18,7 +19,7 @@ import (
 
 func randomCategory(t *testing.T) (category db.Category){
 		id := util.RandomInt(1,1000)
-		name := util.RandomString(6)
+		name := string("produces")
 		category = db.Category{
 			ID: id,
 			Name: name,
@@ -33,9 +34,12 @@ func TestListCategoriesNoAuth(t *testing.T){
 		catergories[i] = randomCategory(t)
 	}
 	type Query struct {
-		Limit  int32 `form:"limit" binding:"required,min=5,max=10"`
-		Offset int32 `form:"offset" binding:"required"`
+		Limit  int32
+		Offset *int32
 	}
+	Limit := int32(5)
+	Offset := int32(0)
+	
 	testCases := []struct{
 		name string
 		query Query
@@ -45,20 +49,46 @@ func TestListCategoriesNoAuth(t *testing.T){
 		{
 			name: "OK",
 			query: Query{
-				Limit: 5,
-				Offset: 0,
+				Limit: Limit,
+				Offset: &Offset,
 			},
 			buildStubs: func(store *mockdb.MockStore){
 				arg := db.ListCategoriesParams{
-					Limit: 5,
-					Offset: 0,
+					Limit: Limit,
+					Offset: Offset,
 				}
 				fmt.Printf("arg is %v\n",arg)
-				store.EXPECT().ListCategories(gomock.Any(),gomock.Eq(arg)).Times(10).Return(catergories,nil)
+				store.EXPECT().ListCategories(gomock.Any(),gomock.Eq(arg)).Times(1).Return(catergories,nil)
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder){
 				require.Equal(t,http.StatusOK, recorder.Code)
 				requireBodyMatchCategory(t,recorder.Body,catergories)
+			},
+		},
+		{
+			name: "InternalError",
+			query: Query{
+				Limit: Limit,
+				Offset: &Offset,
+			},
+			buildStubs: func(store *mockdb.MockStore){
+				store.EXPECT().ListCategories(gomock.Any(),gomock.Any()).Times(1).Return([]db.Category{},sql.ErrConnDone)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder){
+				require.Equal(t,http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name: "InvalidLimit",
+			query: Query{
+				Limit: 0,
+				Offset: &Offset,
+			},
+			buildStubs: func(store *mockdb.MockStore){
+				store.EXPECT().ListCategories(gomock.Any(),gomock.Any()).Times(0)
+			},
+			checkResponse: func(recorder *httptest.ResponseRecorder){
+				require.Equal(t,http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -82,14 +112,20 @@ func TestListCategoriesNoAuth(t *testing.T){
 
 			q := request.URL.Query()
 			q.Add("limit",fmt.Sprintf("%d", tc.query.Limit))
-			q.Add("offset",fmt.Sprintf("%d", tc.query.Offset))
+			q.Add("offset",fmt.Sprintf("%d", *tc.query.Offset))
 			request.URL.RawQuery = q.Encode()
-
+			fmt.Printf("request.URL.RawQuery is %v\n",request.URL.RawQuery)
 			server.router.ServeHTTP(recorder,request)
+			fmt.Printf("listCategoriesNoAuth is called6\n")
 			tc.checkResponse(recorder)
+			// requireBodyMatchCategory(t, recorder.Body, catergories)
+
 		})
 	}
 }
+
+
+
 
 func TestGetGategoryAPI(test *testing.T) {
 	category := randomCategory(test)
@@ -111,6 +147,39 @@ func TestGetGategoryAPI(test *testing.T) {
 
 	server.router.ServeHTTP(recorder, request)
 	require.Equal(test, http.StatusOK, recorder.Code)
+}
+
+func TestListGategoryAPI(t *testing.T) {
+	n := 10
+	catergories := make([]db.Category,n)
+	for i := 0; i < n; i++ {
+		catergories[i] = randomCategory(t)
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	store := mockdb.NewMockStore(ctrl)
+	arg := db.ListCategoriesParams{
+		Limit: int32(5),
+		Offset: int32(0),
+	}
+	store.EXPECT().ListCategories(gomock.Any(), gomock.Eq(arg)).Times(1).Return(catergories, nil)
+	server, _ := NewServer2(store)
+	recorder := httptest.NewRecorder()
+	url := "/listCategories/noAuth"
+	request, err := http.NewRequest(http.MethodGet,url,nil)
+	require.NoError(t,err)
+
+	q := request.URL.Query()
+	q.Add("limit",fmt.Sprintf("%d", arg.Limit))
+	q.Add("offset",fmt.Sprintf("%d", arg.Offset))
+	request.URL.RawQuery = q.Encode()
+
+	server.router.ServeHTTP(recorder, request)
+	require.Equal(t, http.StatusOK, recorder.Code)
+	requireBodyMatchCategory(t, recorder.Body, catergories)
+
 }
 
 func requireBodyMatchCategory(t *testing.T, body *bytes.Buffer, category []db.Category){
